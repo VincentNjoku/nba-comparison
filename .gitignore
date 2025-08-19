@@ -144,5 +144,7 @@ Thumbs.db
 # Allow cleaned data files for deployment
 !data/cleaned_stats.csv
 !data/teams_with_archetypes.csv
-data/raw_*
-models/*.pkl 
+# Allow model files for deployment
+!models/era_classifier.pkl
+!models/era_classifier_metrics.pkl
+data/raw_* 
