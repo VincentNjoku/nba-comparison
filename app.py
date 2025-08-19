@@ -36,6 +36,19 @@ def era_overview(df):
     """Era overview tab"""
     st.header("🏠 NBA Era Overview")
     
+    # Add help section for key concepts
+    with st.expander("💡 **What do these stats mean?**"):
+        st.markdown("""
+        **Understanding the Numbers:**
+        
+        📊 **Pace:** Higher numbers = faster games with more possessions. Think of it as "how busy is the game?"
+        
+        🏀 **ORtg (Offensive Rating):** Points per 100 possessions. This is the key efficiency stat - higher = better scoring efficiency, regardless of game speed.
+        
+        📈 **3P_Rate:** What percentage of shots are 3-pointers. Shows how much teams rely on the 3-ball vs. mid-range or inside shots.
+        """)
+        st.success("**Quick example:** A team with 110 ORtg and 95 Pace scores efficiently but plays slowly. A team with 105 ORtg and 105 Pace scores less efficiently but plays faster.")
+    
     col1, col2 = st.columns(2)
     
     with col1:
@@ -67,6 +80,25 @@ def era_comparison(df):
     """Era comparison tab"""
     st.header("📊 Compare NBA Eras")
     
+    # Add help section for complex metrics
+    with st.expander("💡 **Need help understanding these stats? Click here!**"):
+        st.markdown("""
+        **Key Metrics Explained:**
+        
+        🏀 **PTS (Points per Game):** Average points scored per game
+        
+        🏀 **3PA (3-Point Attempts):** Average 3-point shots attempted per game
+        
+        🏀 **3P_Rate:** Percentage of shots that are 3-pointers (3PA ÷ Total Shots)
+        
+        🏀 **AST (Assists):** Average assists per game
+        
+        🏀 **Pace:** Possessions per 48 minutes - higher means faster, more action-packed games
+        
+        🏀 **ORtg (Offensive Rating):** Points scored per 100 possessions - higher means more efficient scoring
+        """)
+        st.info("💡 **Pro tip:** ORtg is the most important efficiency stat. A team with 110 ORtg scores 110 points per 100 possessions, regardless of how fast they play!")
+    
     col1, col2 = st.columns(2)
     with col1:
         era1 = st.selectbox("Select first era:", df['Era'].unique(), index=0)
@@ -85,7 +117,14 @@ def era_comparison(df):
             '3P_Rate': '3-Point Rate (3PA/FGA)',
             'AST': 'Assists per Game',
             'Pace': 'Possessions per 48 min',
-            'ORtg': 'Offensive Rating'
+            'ORtg': 'Offensive Rating (Points per 100 possessions)'
+        }
+        
+        # Add detailed explanations for complex metrics
+        metric_details = {
+            'ORtg': '**Offensive Rating (ORtg):** Points scored per 100 possessions. Higher = more efficient scoring. Think of it as "how many points would this team score if they had 100 possessions?"',
+            'Pace': '**Pace:** Possessions per 48 minutes. Higher = faster gameplay, more shots, more action. Lower = slower, more deliberate play.',
+            '3P_Rate': '**3-Point Rate:** Percentage of field goal attempts that are 3-pointers. Shows how much a team relies on the 3-ball.'
         }
         
         # Side-by-side comparison
@@ -180,6 +219,16 @@ def era_prediction(df):
             
             prediction = predict_era(team_stats)
             st.success(f"**Prediction: {prediction}**")
+            
+            # Show calculated stats with explanations
+            st.subheader("📊 Your Team's Calculated Stats")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("3-Point Rate", f"{three_rate:.1%}")
+                st.metric("Pace", f"{pace:.1f}")
+            with col2:
+                st.metric("Offensive Rating", f"{ortg:.3f}")
+                st.caption("💡 ORtg = Points per possession. Higher = more efficient scoring!")
     
     with col2:
         st.subheader("📋 Sample Teams by Era")
