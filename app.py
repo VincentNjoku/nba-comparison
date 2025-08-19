@@ -137,7 +137,9 @@ def era_comparison(df):
                 if metric == '3P_Rate':
                     st.metric(metric_name, f"{era1_avg[metric]:.1%}")
                 elif metric == 'ORtg':
-                    st.metric(metric_name, f"{era1_avg[metric]:.3f}")
+                    # Convert points per possession to points per 100 possessions for display
+                    ortg_display = era1_avg[metric] * 100
+                    st.metric(metric_name, f"{ortg_display:.1f}")
                 else:
                     st.metric(metric_name, f"{era1_avg[metric]:.1f}")
         
@@ -149,7 +151,9 @@ def era_comparison(df):
                 if metric == '3P_Rate':
                     st.metric(metric_name, f"{era2_avg[metric]:.1%}")
                 elif metric == 'ORtg':
-                    st.metric(metric_name, f"{era2_avg[metric]:.1%}")
+                    # Convert points per possession to points per 100 possessions for display
+                    ortg_display = era2_avg[metric] * 100
+                    st.metric(metric_name, f"{ortg_display:.1f}")
                 else:
                     st.metric(metric_name, f"{era2_avg[metric]:.1f}")
         
@@ -160,7 +164,7 @@ def era_comparison(df):
         with col1:
             st.subheader("📈 Large-Scale Metrics")
             large_metrics = ['PTS', '3PA', 'AST', 'TOV', 'Pace']
-            large_data = [{'Metric': m, era1: era1_avg[m], era2: era2_avg[m]} for m in large_metrics if m in metrics]
+            large_data = [{'Metric': metric_explanations.get(m, m), era1: era1_avg[m], era2: era2_avg[m]} for m in large_metrics if m in metrics]
             if large_data:
                 large_df = pd.DataFrame(large_data)
                 fig = px.bar(large_df, x='Metric', y=[era1, era2], barmode='group',
@@ -171,9 +175,13 @@ def era_comparison(df):
         with col2:
             st.subheader("📊 Small-Scale Metrics")
             small_metrics = ['3P_Rate', 'ORtg']
-            small_data = [{'Metric': m, era1: era1_avg[m], era2: era2_avg[m]} for m in small_metrics if m in metrics]
+            small_data = [{'Metric': metric_explanations.get(m, m), era1: era1_avg[m], era2: era2_avg[m]} for m in small_metrics if m in metrics]
             if small_data:
                 small_df = pd.DataFrame(small_data)
+                # Convert ORtg to points per 100 possessions for the chart
+                if 'ORtg' in small_df.columns:
+                    small_df[era1] = small_df.apply(lambda row: row[era1] * 100 if row['Metric'] == 'ORtg' else row[era1], axis=1)
+                    small_df[era2] = small_df.apply(lambda row: row[era2] * 100 if row['Metric'] == 'ORtg' else row[era2], axis=1)
                 fig = px.bar(small_df, x='Metric', y=[era1, era2], barmode='group',
                             color_discrete_map={era1: COLORS[era1], era2: COLORS[era2]})
                 fig.update_layout(title=f"{era1} vs {era2} - Small-Scale Metrics")
@@ -183,11 +191,29 @@ def era_comparison(df):
         st.subheader("📋 Comparison Data")
         comparison_data = []
         for metric in metrics:
+            era1_val = era1_avg[metric]
+            era2_val = era2_avg[metric]
+            diff = era2_val - era1_val
+            
+            if metric == 'ORtg':
+                # Convert ORtg to points per 100 possessions for display
+                era1_display = f"{era1_val * 100:.1f}"
+                era2_display = f"{era2_val * 100:.1f}"
+                diff_display = f"{diff * 100:+.1f}"
+            elif metric == '3P_Rate':
+                era1_display = f"{era1_val:.1%}"
+                era2_display = f"{era2_val:.1%}"
+                diff_display = f"{diff:+.1%}"
+            else:
+                era1_display = f"{era1_val:.1f}"
+                era2_display = f"{era2_val:.1f}"
+                diff_display = f"{diff:+.1f}"
+            
             comparison_data.append({
-                'Metric': metric,
-                f'{era1}': f"{era1_avg[metric]:.3f}",
-                f'{era2}': f"{era2_avg[metric]:.3f}",
-                'Difference': f"{era2_avg[metric] - era1_avg[metric]:+.3f}"
+                'Metric': metric_explanations.get(metric, metric),
+                f'{era1}': era1_display,
+                f'{era2}': era2_display,
+                'Difference': diff_display
             })
         st.dataframe(pd.DataFrame(comparison_data), use_container_width=True)
 
@@ -227,8 +253,10 @@ def era_prediction(df):
                 st.metric("3-Point Rate", f"{three_rate:.1%}")
                 st.metric("Pace", f"{pace:.1f}")
             with col2:
-                st.metric("Offensive Rating", f"{ortg:.3f}")
-                st.caption("💡 ORtg = Points per possession. Higher = more efficient scoring!")
+                # Convert points per possession to points per 100 possessions for display
+                ortg_display = ortg * 100
+                st.metric("Offensive Rating", f"{ortg_display:.1f}")
+                st.caption("💡 ORtg = Points per 100 possessions. Higher = more efficient scoring!")
     
     with col2:
         st.subheader("📋 Sample Teams by Era")
@@ -276,7 +304,9 @@ def offensive_archetypes(df_archetypes):
             with col3:
                 st.write(f"**3P Rate:** {archetype_data['3P_Rate'].mean():.1%}")
                 st.write(f"**Pace:** {archetype_data['Pace'].mean():.1f}")
-                st.write(f"**ORtg:** {archetype_data['ORtg'].mean():.3f}")
+                # Convert points per possession to points per 100 possessions for display
+                ortg_avg = archetype_data['ORtg'].mean() * 100
+                st.write(f"**ORtg:** {ortg_avg:.1f}")
             
             era_dist = archetype_data['Era'].value_counts()
             clean_era_dist = {era: int(count) for era, count in era_dist.items()}
