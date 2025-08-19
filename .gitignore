@@ -141,6 +141,8 @@ Thumbs.db
 # Project specific
 *.pkl
 *.xlsx
-*.csv
+# Allow cleaned data files for deployment
+!data/cleaned_stats.csv
+!data/teams_with_archetypes.csv
 data/raw_*
 models/*.pkl 
