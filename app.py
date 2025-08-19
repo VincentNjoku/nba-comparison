@@ -41,12 +41,14 @@ def era_overview(df):
     with col1:
         st.subheader("📈 Era Distribution")
         era_counts = df['Era'].value_counts()
-        fig = px.pie(values=era_counts.values, names=era_counts.index, title="Teams by Era", color_discrete_map=COLORS)
+        fig = px.pie(values=era_counts.values, names=era_counts.index, title="Team Seasons by Era", color_discrete_map=COLORS)
         st.plotly_chart(fig, use_container_width=True)
+        st.caption("💡 This shows the number of team seasons in our dataset for each era, not the number of NBA teams.")
         
         st.subheader("📊 Key Statistics by Era")
         era_stats = df.groupby('Era')[['PTS', '3PA', '3P_Rate', 'Pace']].mean().round(2)
         st.dataframe(era_stats, use_container_width=True)
+        st.caption("💡 Pace = possessions per 48 minutes (higher = faster gameplay)")
     
     with col2:
         st.subheader("🏀 3-Point Evolution")
@@ -76,29 +78,41 @@ def era_comparison(df):
         era2_data = df[df['Era'] == era2]
         metrics = ['PTS', '3PA', '3P_Rate', 'AST', 'Pace', 'ORtg']
         
+        # Add metric explanations
+        metric_explanations = {
+            'PTS': 'Points per Game',
+            '3PA': '3-Point Attempts per Game', 
+            '3P_Rate': '3-Point Rate (3PA/FGA)',
+            'AST': 'Assists per Game',
+            'Pace': 'Possessions per 48 min',
+            'ORtg': 'Offensive Rating'
+        }
+        
         # Side-by-side comparison
         col1, col2 = st.columns(2)
         with col1:
             st.subheader(f"🏀 {era1} Style")
             era1_avg = era1_data[metrics].mean().round(2)
             for metric in metrics:
+                metric_name = metric_explanations.get(metric, metric)
                 if metric == '3P_Rate':
-                    st.metric(metric, f"{era1_avg[metric]:.1%}")
+                    st.metric(metric_name, f"{era1_avg[metric]:.1%}")
                 elif metric == 'ORtg':
-                    st.metric(metric, f"{era1_avg[metric]:.3f}")
+                    st.metric(metric_name, f"{era1_avg[metric]:.3f}")
                 else:
-                    st.metric(metric, f"{era1_avg[metric]:.1f}")
+                    st.metric(metric_name, f"{era1_avg[metric]:.1f}")
         
         with col2:
             st.subheader(f"🏀 {era2} Style")
             era2_avg = era2_data[metrics].mean().round(2)
             for metric in metrics:
+                metric_name = metric_explanations.get(metric, metric)
                 if metric == '3P_Rate':
-                    st.metric(metric, f"{era2_avg[metric]:.1%}")
+                    st.metric(metric_name, f"{era2_avg[metric]:.1%}")
                 elif metric == 'ORtg':
-                    st.metric(metric, f"{era2_avg[metric]:.3f}")
+                    st.metric(metric_name, f"{era2_avg[metric]:.1%}")
                 else:
-                    st.metric(metric, f"{era2_avg[metric]:.1f}")
+                    st.metric(metric_name, f"{era2_avg[metric]:.1f}")
         
         # Charts
         st.subheader("📊 Era Comparison Charts")
